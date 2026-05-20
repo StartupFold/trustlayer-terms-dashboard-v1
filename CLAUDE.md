@@ -38,12 +38,13 @@ Do not create new folders or files outside the defined structure without being a
 - PostgreSQL 18 running on localhost:5432
 - Database name: trustlayer
 - DB user: postgres / password: postgres
+- bcrypt version: 4.0.1 (do not upgrade)
 
 ## Running the Backend
 - Always activate venv first
 - cd backend
 - uvicorn app.main:app --reload --port 8000
-- API docs available at http://127.0.0.1:8000/docs
+- API docs at http://127.0.0.1:8000/docs
 
 ## Task Rules (IMPORTANT)
 - Complete ONE task at a time
@@ -52,11 +53,11 @@ Do not create new folders or files outside the defined structure without being a
 - Do not install packages not listed in requirements.txt without asking first
 
 ## Current Progress
-- ✅ Phase 0: Repo setup (CLAUDE.md, .gitignore, .env, .env.example, README)
-- ✅ Phase 1a: Monorepo scaffold complete (all folders and files created)
-- ✅ Phase 1b: Database models implemented (organization, user, policy, policy_version, acceptance_log)
+- ✅ Phase 0: Repo setup
+- ✅ Phase 1a: Monorepo scaffold complete
+- ✅ Phase 1b: All 5 database models implemented
 - ✅ Phase 1c: database.py and config.py implemented
-- ✅ Phase 1d: Alembic migrations setup and applied — all 5 tables in PostgreSQL
+- ✅ Phase 1d: Alembic migrations — all 5 tables live in PostgreSQL
 - ✅ Phase 2: JWT Authentication (register + login tested and working)
 - ⬜ Phase 3: Policy CRUD
 - ⬜ Phase 4: Policy Versioning
@@ -67,5 +68,10 @@ Do not create new folders or files outside the defined structure without being a
 - ⬜ Phase 9: Polish + README
 
 ## Next Step
-Implement Policy CRUD in backend/app/routes/policy_routes.py
-and backend/app/services/policy_service.py
+Implement Policy CRUD in backend/app/routes/policy_routes.py 
+and backend/app/services/policy_service.py with these endpoints:
+GET /api/policies — list all policies for the organization
+POST /api/policies — create a new policy
+PUT /api/policies/{id} — edit a policy
+DELETE /api/policies/{id} — delete a policy
+POST /api/policies/{id}/publish — publish a policy
