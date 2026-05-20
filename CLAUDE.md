@@ -35,3 +35,20 @@ Do not create new folders or files outside the defined structure without being a
 - Do not move to the next task until the current one is done
 - If something is unclear, stop and ask — do not assume
 - Do not install packages not listed in requirements.txt without asking first
+
+## Current Progress
+- ✅ Phase 0: Repo setup (CLAUDE.md, .gitignore, .env, .env.example, README)
+- ✅ Phase 1a: Monorepo scaffold complete (all folders and files created)
+- ✅ Phase 1b: Database models implemented (organization, user, policy, policy_version, acceptance_log)
+- ✅ Phase 1c: database.py and config.py implemented
+- ⬜ Phase 1d: Alembic migrations setup
+- ⬜ Phase 2a: JWT Authentication (register, login)
+- ⬜ Phase 2b: Policy CRUD
+- ⬜ Phase 2c: Policy Versioning
+- ⬜ Phase 2d: Acceptance Tracking
+- ⬜ Phase 2e: Audit Logs
+- ⬜ Phase 3: Frontend pages
+- ⬜ Phase 4: Docker + Nginx
+
+## Next Step
+Set up Alembic migrations and connect models to PostgreSQL database.
