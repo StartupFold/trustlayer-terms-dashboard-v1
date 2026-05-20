@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes.auth_routes import router as auth_router
 from app.routes.policy_routes import router as policy_router
+from app.routes.admin_routes import router as admin_router
 
 
 app = FastAPI(
@@ -27,6 +28,7 @@ app.add_middleware(
 
 app.include_router(auth_router, prefix="/api")
 app.include_router(policy_router, prefix="/api")
+app.include_router(admin_router, prefix="/api")
 
 
 @app.get("/")
