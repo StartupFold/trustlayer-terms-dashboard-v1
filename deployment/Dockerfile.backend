@@ -1,1 +1,17 @@
 # Dockerfile for building the backend service image.
+# Uses Python 3.11 slim image and runs FastAPI with uvicorn.
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY backend/app ./app
+COPY backend/alembic.ini .
+COPY backend/alembic ./alembic
+
+EXPOSE 8000
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

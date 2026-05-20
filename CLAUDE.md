@@ -1,8 +1,19 @@
-# TrustLayer Terms Dashboard — Claude Code Instructions
+# TrustLayer Terms Dashboard — CLAUDE.md
 
 ## Project Overview
-A multi-tenant SaaS platform where organizations can manage Terms & Conditions, 
+Multi-tenant SaaS platform where organizations can manage Terms & Conditions,
 track user acceptance, and maintain policy version history.
+
+## Repo
+https://github.com/StartupFold/trustlayer-terms-dashboard-v1
+
+## HOW WE WORK
+- Prompts are crafted in Claude.ai first, then pasted into Claude Code
+- One task at a time — never combine unrelated features
+- Screenshot results back to Claude.ai after every task
+- Commit manually after every completed and tested feature
+- Never ask Claude Code to commit
+- Commit format: "Phase X: Feature name implemented and tested"
 
 ## Tech Stack
 - Backend: FastAPI, Python 3.11, SQLAlchemy ORM, Alembic, JWT
@@ -10,9 +21,43 @@ track user acceptance, and maintain policy version history.
 - Database: PostgreSQL 18
 - Deployment: Docker, Docker Compose, Nginx
 
+## Environment (Windows)
+- Python 3.11.9, venv in project root
+- Activate venv: venv\Scripts\activate
+- PostgreSQL 18, database: trustlayer, user: postgres/postgres
+- bcrypt==4.0.1 (do not upgrade)
+- Node.js v24.15.0 installed
+- Backend runs: cd backend → uvicorn app.main:app --reload --port 8000
+- Frontend runs: cd frontend → npm start
+- Docker Desktop v29.4.3 installed and running
+
 ## Repo Structure
-See the /backend and /frontend folders. Follow the existing structure strictly.
-Do not create new folders or files outside the defined structure without being asked.
+trustlayer-terms-dashboard-v1/
+├── backend/
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── config.py
+│   │   ├── database.py
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   └── schemas/
+│   ├── requirements.txt
+│   └── alembic/
+├── frontend/
+│   ├── src/
+│   │   ├── pages/
+│   │   ├── components/
+│   │   ├── api/api.js
+│   │   ├── App.js
+│   │   └── index.js
+│   └── package.json
+├── deployment/
+│   ├── docker-compose.yml
+│   ├── Dockerfile.backend
+│   ├── Dockerfile.frontend
+│   └── nginx/nginx.conf
+└── CLAUDE.md
 
 ## Database Rules
 - ORM only — never write raw SQL
@@ -23,76 +68,59 @@ Do not create new folders or files outside the defined structure without being a
 - Never hardcode passwords, secrets, or API keys
 - All config loaded from .env via config.py
 - Keep files small and modular
-- Add a comment block at the top of every new file explaining its purpose
+- Add a comment block at the top of every new file
 
 ## Auth
 - JWT-based authentication
-- Single users table with role field: `admin` or `user`
+- Single users table with role field: admin or user
 - Users belong to an organization via organization_id FK
 - Passwords truncated to 72 chars before bcrypt hashing
-
-## Environment
-- Python 3.11.9 (use `py -3.11` on Windows)
-- Virtual environment: venv/ in project root
-- Activate with: venv\Scripts\activate
-- PostgreSQL 18 running on localhost:5432
-- Database name: trustlayer
-- DB user: postgres / password: postgres
-- bcrypt version: 4.0.1 (do not upgrade)
-- Node.js LTS installed
-
-## Running the Backend
-- Always activate venv first
-- cd backend
-- uvicorn app.main:app --reload --port 8000
-- API docs at http://127.0.0.1:8000/docs
-
-## Running the Frontend
-- cd frontend
-- npm start
-- Runs on http://localhost:3000
-
-## Task Rules (IMPORTANT)
-- Complete ONE task at a time
-- Do not move to the next task until the current one is done
-- If something is unclear, stop and ask — do not assume
-- Do not install packages not listed in requirements.txt without asking first
-
-## Current Progress
-- ✅ Phase 0: Repo setup
-- ✅ Phase 1a: Monorepo scaffold complete
-- ✅ Phase 1b: All 5 database models implemented
-- ✅ Phase 1c: database.py and config.py implemented
-- ✅ Phase 1d: Alembic migrations — all 5 tables live in PostgreSQL
-- ✅ Phase 2: JWT Authentication (register + login tested and working)
-- ✅ Phase 3: Policy CRUD (all 5 endpoints tested and working)
-- ✅ Phase 4: Policy Versioning (auto-increments on update, tested)
-- ✅ Phase 5: Acceptance Tracking (public endpoint, stores IP + user agent)
-- ✅ Phase 6: Audit Logs (admin only, returns all acceptance logs)
-- ⬜ Phase 7: Frontend pages
-- ⬜ Phase 8: Docker + Nginx
-- ⬜ Phase 9: Polish + README
+- Test user: test@test.com / password123
 
 ## API Endpoints (All Working)
 - POST /api/register
 - POST /api/login
-- POST /api/token (OAuth2 form login)
+- POST /api/token
 - GET /api/policies
 - POST /api/policies
 - PUT /api/policies/{id}
 - DELETE /api/policies/{id}
 - POST /api/policies/{id}/publish
 - GET /api/policies/{id}/versions
-- POST /api/policies/{id}/accept (public)
-- GET /api/audit-logs (admin only)
+- POST /api/policies/{id}/accept
+- GET /api/audit-logs
 
-## Frontend Pages To Build
-- LoginPage.js — email/password login form
-- DashboardPage.js — total policies, total acceptances, recent activity
-- PoliciesPage.js — list policies, create, edit, delete
-- PolicyViewPage.js — public policy page with "I Agree" button
-- AuditLogsPage.js — table of acceptance logs
+## Current Progress
+- ✅ Phase 0: Repo setup
+- ✅ Phase 1a: Monorepo scaffold
+- ✅ Phase 1b: All 5 database models
+- ✅ Phase 1c: database.py and config.py
+- ✅ Phase 1d: Alembic migrations
+- ✅ Phase 2: JWT Authentication
+- ✅ Phase 3: Policy CRUD
+- ✅ Phase 4: Policy Versioning
+- ✅ Phase 5: Acceptance Tracking
+- ✅ Phase 6: Audit Logs
+- ✅ Phase 7: All 5 frontend pages built and tested
+- 🔄 Phase 8: Docker + Nginx (in progress)
+- ⬜ Phase 9: README + Polish
+
+## Phase 8 Status
+Files created:
+- deployment/Dockerfile.backend ← needs fix (see below)
+- deployment/Dockerfile.frontend ✅
+- deployment/nginx/nginx.conf ✅
+- deployment/docker-compose.yml ✅
+
+CURRENT BUG TO FIX:
+In deployment/Dockerfile.backend, fix these lines:
+  WRONG:  COPY alembic.ini .
+  WRONG:  COPY alembic ./alembic
+  RIGHT:  COPY backend/alembic.ini .
+  RIGHT:  COPY backend/alembic ./alembic
 
 ## Next Step
-Node.js LTS is installed. Run npm install in frontend/ folder
-then build all 5 React pages one by one.
+1. Fix Dockerfile.backend paths (see above)
+2. Run: docker compose -f deployment/docker-compose.yml up --build --force-recreate
+3. Verify all 3 containers start successfully
+4. Test app at http://localhost:80
