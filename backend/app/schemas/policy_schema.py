@@ -30,3 +30,14 @@ class PolicyResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class PolicyVersionResponse(BaseModel):
+    id: int
+    policy_id: int
+    version_number: int
+    content: str
+    created_at: datetime
+
+    class Config:
+        orm_mode = True

@@ -48,24 +48,37 @@ def update_policy(db: Session, policy_id: int, policy_in: PolicyUpdate) -> Polic
     if policy_in.policy_type is not None:
         policy.policy_type = policy_in.policy_type
 
-    if policy_in.content is not None:
-        latest_version = (
-            db.query(PolicyVersion)
-            .filter(PolicyVersion.policy_id == policy.id)
-            .order_by(PolicyVersion.version_number.desc())
-            .first()
-        )
-        next_version = latest_version.version_number + 1 if latest_version else 1
-        new_version = PolicyVersion(
-            policy_id=policy.id,
-            version_number=next_version,
-            content=policy_in.content,
-        )
-        db.add(new_version)
+    latest_version = (
+        db.query(PolicyVersion)
+        .filter(PolicyVersion.policy_id == policy.id)
+        .order_by(PolicyVersion.version_number.desc())
+        .first()
+    )
+    next_version = latest_version.version_number + 1 if latest_version else 1
+    content = (
+        policy_in.content
+        if policy_in.content is not None
+        else (latest_version.content if latest_version else "")
+    )
+    new_version = PolicyVersion(
+        policy_id=policy.id,
+        version_number=next_version,
+        content=content,
+    )
+    db.add(new_version)
 
     db.commit()
     db.refresh(policy)
     return policy
+
+
+def get_policy_versions(db: Session, policy_id: int) -> list[PolicyVersion]:
+    return (
+        db.query(PolicyVersion)
+        .filter(PolicyVersion.policy_id == policy_id)
+        .order_by(PolicyVersion.version_number)
+        .all()
+    )
 
 
 def delete_policy(db: Session, policy_id: int) -> None:

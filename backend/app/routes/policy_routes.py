@@ -10,11 +10,12 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import get_db
 from app.models import User
-from app.schemas.policy_schema import PolicyCreate, PolicyResponse, PolicyUpdate
+from app.schemas.policy_schema import PolicyCreate, PolicyResponse, PolicyUpdate, PolicyVersionResponse
 from app.services.policy_service import (
     create_policy,
     delete_policy,
     get_policy,
+    get_policy_versions,
     get_policies,
     publish_policy,
     update_policy,
@@ -71,6 +72,18 @@ def create_new_policy(
     db: Session = Depends(get_db),
 ) -> Any:
     return create_policy(db, current_user, policy_in)
+
+
+@router.get("/policies/{policy_id}/versions", response_model=list[PolicyVersionResponse])
+def list_policy_versions(
+    policy_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Any:
+    policy = get_policy(db, policy_id)
+    if policy.organization_id != current_user.organization_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
+    return get_policy_versions(db, policy_id)
 
 
 @router.put("/policies/{policy_id}", response_model=PolicyResponse)
