@@ -3,3 +3,9 @@
 */
 
 import React from 'react'
+
+function DashboardPage() {
+  return <div>Loading...</div>
+}
+
+export default DashboardPage

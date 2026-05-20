@@ -3,3 +3,9 @@
 */
 
 import React from 'react'
+
+function PolicyViewPage() {
+  return <div>Loading...</div>
+}
+
+export default PolicyViewPage

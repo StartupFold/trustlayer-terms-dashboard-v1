@@ -3,3 +3,9 @@
 */
 
 import React from 'react'
+
+function PoliciesPage() {
+  return <div>Loading...</div>
+}
+
+export default PoliciesPage

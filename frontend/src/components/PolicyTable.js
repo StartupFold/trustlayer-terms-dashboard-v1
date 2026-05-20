@@ -3,3 +3,9 @@
 */
 
 import React from 'react'
+
+function PolicyTable() {
+  return <div>Loading...</div>
+}
+
+export default PolicyTable
