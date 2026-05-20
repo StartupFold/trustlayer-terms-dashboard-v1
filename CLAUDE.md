@@ -7,7 +7,7 @@ track user acceptance, and maintain policy version history.
 ## Tech Stack
 - Backend: FastAPI, Python 3.11, SQLAlchemy ORM, Alembic, JWT
 - Frontend: React, Bootstrap 4.1, Axios, React Router
-- Database: PostgreSQL
+- Database: PostgreSQL 18
 - Deployment: Docker, Docker Compose, Nginx
 
 ## Repo Structure
@@ -29,6 +29,21 @@ Do not create new folders or files outside the defined structure without being a
 - JWT-based authentication
 - Single users table with role field: `admin` or `user`
 - Users belong to an organization via organization_id FK
+- Passwords truncated to 72 chars before bcrypt hashing
+
+## Environment
+- Python 3.11.9 (use `py -3.11` on Windows)
+- Virtual environment: venv/ in project root
+- Activate with: venv\Scripts\activate
+- PostgreSQL 18 running on localhost:5432
+- Database name: trustlayer
+- DB user: postgres / password: postgres
+
+## Running the Backend
+- Always activate venv first
+- cd backend
+- uvicorn app.main:app --reload --port 8000
+- API docs available at http://127.0.0.1:8000/docs
 
 ## Task Rules (IMPORTANT)
 - Complete ONE task at a time
@@ -41,14 +56,16 @@ Do not create new folders or files outside the defined structure without being a
 - ✅ Phase 1a: Monorepo scaffold complete (all folders and files created)
 - ✅ Phase 1b: Database models implemented (organization, user, policy, policy_version, acceptance_log)
 - ✅ Phase 1c: database.py and config.py implemented
-- ⬜ Phase 1d: Alembic migrations setup
-- ⬜ Phase 2a: JWT Authentication (register, login)
-- ⬜ Phase 2b: Policy CRUD
-- ⬜ Phase 2c: Policy Versioning
-- ⬜ Phase 2d: Acceptance Tracking
-- ⬜ Phase 2e: Audit Logs
-- ⬜ Phase 3: Frontend pages
-- ⬜ Phase 4: Docker + Nginx
+- ✅ Phase 1d: Alembic migrations setup and applied — all 5 tables in PostgreSQL
+- ✅ Phase 2: JWT Authentication (register + login tested and working)
+- ⬜ Phase 3: Policy CRUD
+- ⬜ Phase 4: Policy Versioning
+- ⬜ Phase 5: Acceptance Tracking
+- ⬜ Phase 6: Audit Logs
+- ⬜ Phase 7: Frontend pages
+- ⬜ Phase 8: Docker + Nginx
+- ⬜ Phase 9: Polish + README
 
 ## Next Step
-Set up Alembic migrations and connect models to PostgreSQL database.
+Implement Policy CRUD in backend/app/routes/policy_routes.py
+and backend/app/services/policy_service.py
