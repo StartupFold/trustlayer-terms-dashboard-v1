@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from jose import jwt
@@ -68,3 +69,24 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)) -> Any:
 	token = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 	return {"access_token": token, "token_type": "bearer"}
+
+@router.post("/token", response_model=TokenResponse)
+def login_for_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db),
+) -> Any:
+    user = db.query(User).filter(User.email == form_data.username).first()
+    incoming_password = form_data.password[:72]
+    if not user or not verify_password(incoming_password, user.password_hash):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+
+    expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    payload = {
+        "sub": user.email,
+        "role": user.role,
+        "organization_id": user.organization_id,
+        "exp": expire,
+    }
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+    return {"access_token": token, "token_type": "bearer"}
