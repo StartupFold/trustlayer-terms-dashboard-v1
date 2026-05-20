@@ -2,15 +2,16 @@
 
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
-from app.models import User
+from app.models import PolicyVersion, User
 from app.schemas.policy_schema import PolicyCreate, PolicyResponse, PolicyUpdate, PolicyVersionResponse
+from app.services.audit_service import create_acceptance_log
 from app.services.policy_service import (
     create_policy,
     delete_policy,
@@ -122,3 +123,28 @@ def publish_existing_policy(
     if policy.organization_id != current_user.organization_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
     return publish_policy(db, policy_id)
+
+
+@router.post("/policies/{policy_id}/accept")
+def accept_policy(
+    policy_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+) -> Any:
+    policy = get_policy(db, policy_id)
+    if not policy.is_published:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Policy not found")
+
+    latest_version = (
+        db.query(PolicyVersion)
+        .filter(PolicyVersion.policy_id == policy_id)
+        .order_by(PolicyVersion.version_number.desc())
+        .first()
+    )
+    if not latest_version:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Policy version not found")
+
+    ip_address = request.client.host if request.client else None
+    user_agent = request.headers.get("user-agent")
+    create_acceptance_log(db, policy_id, latest_version.id, ip_address, user_agent)
+    return {"message": "Acceptance recorded"}

@@ -41,3 +41,15 @@ class PolicyVersionResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class AcceptanceLogResponse(BaseModel):
+    id: int
+    policy_id: int
+    policy_version_id: int
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+    accepted_at: datetime
+
+    class Config:
+        orm_mode = True
