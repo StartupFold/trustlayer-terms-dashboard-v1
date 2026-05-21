@@ -17,14 +17,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from dotenv import load_dotenv
 load_dotenv(dotenv_path=str(Path(__file__).resolve().parent / ".env"))
 
-from passlib.context import CryptContext
+import bcrypt
 from app.database import SessionLocal
 from app.models import User
 
 SUPER_ADMIN_EMAIL = "admin@trustlayer.com"
 SUPER_ADMIN_PASSWORD = "SuperAdmin123!"
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def main() -> None:
@@ -35,7 +33,7 @@ def main() -> None:
             print("Super admin already exists — skipping.")
             return
 
-        hashed = pwd_context.hash(SUPER_ADMIN_PASSWORD[:72])
+        hashed = bcrypt.hashpw(SUPER_ADMIN_PASSWORD.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         super_admin = User(
             email=SUPER_ADMIN_EMAIL,
             password_hash=hashed,

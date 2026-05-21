@@ -8,6 +8,7 @@ WORKDIR /app
 # Install dependencies first (layer-cached unless requirements change)
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install bcrypt==4.0.1 passlib==1.7.4
 
 # Copy application code
 COPY backend/app ./app
