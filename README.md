@@ -197,6 +197,23 @@ Password: password123
 
 ---
 
+## Deployment
+
+For full deployment instructions (Docker Compose, VPS setup, HTTPS, seed script, environment variables), see:
+
+**[deployment/README-deployment.md](deployment/README-deployment.md)**
+
+Quick start with Docker:
+
+```bash
+cp .env.example .env   # configure your SECRET_KEY
+docker compose -f deployment/docker-compose.yml up --build -d
+```
+
+App available at **http://localhost**
+
+---
+
 ## Future Features
 
 - Email notifications when a new policy version is published
