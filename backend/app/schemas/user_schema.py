@@ -15,7 +15,7 @@ class UserRegister(BaseModel):
 	email: EmailStr
 	password: str = Field(min_length=8)
 	role: Optional[str] = "user"
-	organization_id: int
+	organization_id: Optional[int] = None
 
 
 class UserLogin(BaseModel):
@@ -27,7 +27,7 @@ class UserResponse(BaseModel):
 	id: int
 	email: EmailStr
 	role: str
-	organization_id: int
+	organization_id: Optional[int] = None
 	created_at: datetime
 
 	class Config:

@@ -63,7 +63,7 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)) -> Any:
 	payload = {
 		"sub": user.email,
 		"role": user.role,
-		"organization_id": user.organization_id,
+		"org_id": user.organization_id,
 		"exp": expire,
 	}
 	token = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
@@ -84,7 +84,7 @@ def login_for_token(
     payload = {
         "sub": user.email,
         "role": user.role,
-        "organization_id": user.organization_id,
+        "org_id": user.organization_id,
         "exp": expire,
     }
     token = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)

@@ -1,7 +1,7 @@
 """Organization ORM model definition for multi-tenant support."""
 
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Boolean, Column, Integer, String, DateTime
 from sqlalchemy.orm import relationship
 
 from ..database import Base
@@ -16,6 +16,8 @@ class Organization(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)
+    slug = Column(String, unique=True, nullable=True)
+    is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, default=utcnow, nullable=False)
 
     users = relationship("User", back_populates="organization", cascade="all, delete-orphan")

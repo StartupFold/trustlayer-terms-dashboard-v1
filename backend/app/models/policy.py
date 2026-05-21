@@ -16,7 +16,7 @@ class Policy(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     title = Column(String, nullable=False)
     policy_type = Column(String, nullable=False)
     is_published = Column(Boolean, default=False, nullable=False)
