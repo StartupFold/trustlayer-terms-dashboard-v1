@@ -50,7 +50,35 @@ export function getPolicyVersions(id) {
 }
 
 export function getAuditLogs() {
-  return api.get('/api/audit-logs')
+  return api.get('/api/admin/audit-logs')
+}
+
+// ─── Admin: Organizations ─────────────────────────────────────────────────────
+
+export function getAdminOrgs() {
+  return api.get('/api/admin/organizations')
+}
+
+export function createAdminOrg(data) {
+  return api.post('/api/admin/organizations', data)
+}
+
+export function deleteAdminOrg(id) {
+  return api.delete(`/api/admin/organizations/${id}`)
+}
+
+// ─── Admin: Users ─────────────────────────────────────────────────────────────
+
+export function getAdminUsers() {
+  return api.get('/api/admin/users')
+}
+
+export function createAdminUser(data) {
+  return api.post('/api/admin/users', data)
+}
+
+export function deleteAdminUser(id) {
+  return api.delete(`/api/admin/users/${id}`)
 }
 
 export function acceptPolicy(id) {

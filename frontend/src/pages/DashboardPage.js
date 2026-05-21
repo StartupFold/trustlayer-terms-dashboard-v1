@@ -1,10 +1,11 @@
 /*
   Dashboard page for organization overview.
-  Displays policy and acceptance metrics for the logged-in user.
+  Displays policy and acceptance metrics; adapts UI based on JWT role.
 */
 
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { jwtDecode } from 'jwt-decode'
 import Navbar from '../components/Navbar'
 import { getPolicies, getAuditLogs } from '../api/api'
 
@@ -13,6 +14,7 @@ function DashboardPage() {
   const [policyCount, setPolicyCount] = useState(0)
   const [acceptanceCount, setAcceptanceCount] = useState(0)
   const [email, setEmail] = useState('')
+  const [role, setRole] = useState('')
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -21,52 +23,57 @@ function DashboardPage() {
       return
     }
 
-    const storedEmail = localStorage.getItem('email')
-    if (storedEmail) {
-      setEmail(storedEmail)
-    } else {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))
-        if (payload?.sub) {
-          localStorage.setItem('email', payload.sub)
-          setEmail(payload.sub)
-        }
-      } catch {
-        setEmail('')
-      }
+    try {
+      const payload = jwtDecode(token)
+      setRole(payload.role || '')
+      setEmail(payload.sub || '')
+      if (payload.sub) localStorage.setItem('email', payload.sub)
+      if (payload.role) localStorage.setItem('role', payload.role)
+    } catch {
+      navigate('/')
+      return
     }
 
     getPolicies()
-      .then((response) => {
-        setPolicyCount(response.data.length)
-      })
-      .catch(() => {
-        setPolicyCount(0)
-      })
+      .then((response) => setPolicyCount(response.data.length))
+      .catch(() => setPolicyCount(0))
 
     getAuditLogs()
-      .then((response) => {
-        setAcceptanceCount(response.data.length)
-      })
-      .catch(() => {
-        setAcceptanceCount(0)
-      })
+      .then((response) => setAcceptanceCount(response.data.length))
+      .catch(() => setAcceptanceCount(0))
   }, [navigate])
 
   return (
     <div>
       <Navbar />
       <div className="container mt-4">
-        <div className="row mb-4">
-          <div className="col-12">
+        <div className="row mb-3 align-items-center">
+          <div className="col">
             <h1>Dashboard</h1>
+            {role && (
+              <span className={`badge badge-${
+                role === 'super_admin' ? 'danger' : role === 'org_admin' ? 'warning' : 'secondary'
+              }`}>
+                {role}
+              </span>
+            )}
           </div>
+          {role === 'super_admin' && (
+            <div className="col-auto">
+              <Link to="/admin" className="btn btn-danger">
+                Admin Panel
+              </Link>
+            </div>
+          )}
         </div>
+
         <div className="row">
           <div className="col-sm-12 col-md-4 mb-3">
             <div className="card text-white bg-primary h-100">
               <div className="card-body">
-                <h5 className="card-title">Total Policies</h5>
+                <h5 className="card-title">
+                  {role === 'org_admin' ? 'Org Policies' : 'Total Policies'}
+                </h5>
                 <p className="card-text display-4">{policyCount}</p>
               </div>
             </div>
@@ -74,7 +81,9 @@ function DashboardPage() {
           <div className="col-sm-12 col-md-4 mb-3">
             <div className="card text-white bg-success h-100">
               <div className="card-body">
-                <h5 className="card-title">Total Acceptances</h5>
+                <h5 className="card-title">
+                  {role === 'super_admin' ? 'Platform Acceptances' : 'Total Acceptances'}
+                </h5>
                 <p className="card-text display-4">{acceptanceCount}</p>
               </div>
             </div>
