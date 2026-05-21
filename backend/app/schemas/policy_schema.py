@@ -22,7 +22,7 @@ class PolicyUpdate(BaseModel):
 class PolicyResponse(BaseModel):
     id: int
     organization_id: int
-    user_id: int
+    user_id: Optional[int] = None
     title: str
     policy_type: str
     is_published: bool
