@@ -26,6 +26,16 @@ A multi-tenant SaaS platform for managing Terms & Conditions, tracking user acce
 
 ---
 
+## Screenshots
+
+![Login Page](screenshots/login.png)
+![Dashboard](screenshots/dashboard.png)
+![Admin Panel](screenshots/admin-panel.png)
+![Policies Page](screenshots/policies.png)
+![Audit Logs](screenshots/audit-logs.png)
+
+---
+
 ## Project Structure
 
 ```
