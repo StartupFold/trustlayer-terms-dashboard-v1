@@ -4,10 +4,10 @@
 
 import axios from 'axios'
 
-// In Docker: REACT_APP_API_URL is baked in at build time (e.g. http://localhost).
-// In local dev (npm start): falls back to the uvicorn port.
+// Empty baseURL makes requests relative to whatever domain the page is served from.
+// Works for localhost, Cloudflare Tunnel, ngrok, and any future domain.
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000',
+  baseURL: '',
 })
 
 api.interceptors.request.use((config) => {
