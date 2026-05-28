@@ -11,6 +11,7 @@ import PoliciesPage from './pages/PoliciesPage'
 import AuditLogsPage from './pages/AuditLogsPage'
 import PolicyViewPage from './pages/PolicyViewPage'
 import AdminPage from './pages/AdminPage'
+import SuperAdminPage from './pages/SuperAdminPage'
 
 function App() {
   const [appReady] = useState(true)
@@ -26,6 +27,7 @@ function App() {
           <Route path="/audit-logs" element={<AuditLogsPage />} />
           <Route path="/policies/:id/view" element={<PolicyViewPage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/super-admin" element={<SuperAdminPage />} />
         </Routes>
       )}
     </BrowserRouter>

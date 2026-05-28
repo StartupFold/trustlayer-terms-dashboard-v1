@@ -4,9 +4,7 @@
 */
 
 import React, { useEffect, useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { jwtDecode } from 'jwt-decode'
-import Navbar from '../components/Navbar'
+import Layout from '../components/Layout'
 import {
   getAdminOrgs,
   createAdminOrg,
@@ -29,19 +27,18 @@ function Alert({ type, message, onDismiss }) {
 }
 
 function AdminPage() {
-  const navigate = useNavigate()
-
   // ── Organizations state ──
   const [orgs, setOrgs] = useState([])
   const [orgName, setOrgName] = useState('')
-  const [orgSlug, setOrgSlug] = useState('')
+  const [orgEmail, setOrgEmail] = useState('')
+  const [orgPassword, setOrgPassword] = useState('')
   const [orgAlert, setOrgAlert] = useState({ type: '', message: '' })
 
   // ── Users state ──
   const [users, setUsers] = useState([])
   const [userEmail, setUserEmail] = useState('')
   const [userPassword, setUserPassword] = useState('')
-  const [userRole, setUserRole] = useState('user')
+  const [userRole, setUserRole] = useState('org_admin')
   const [userOrgId, setUserOrgId] = useState('')
   const [userAlert, setUserAlert] = useState({ type: '', message: '' })
 
@@ -56,23 +53,8 @@ function AdminPage() {
   }, [])
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      navigate('/')
-      return
-    }
-    try {
-      const payload = jwtDecode(token)
-      if (payload.role !== 'super_admin') {
-        navigate('/dashboard')
-        return
-      }
-    } catch {
-      navigate('/')
-      return
-    }
     loadData()
-  }, [navigate, loadData])
+  }, [loadData])
 
   // ── Org handlers ──
 
@@ -80,9 +62,10 @@ function AdminPage() {
     e.preventDefault()
     setOrgAlert({ type: '', message: '' })
     try {
-      await createAdminOrg({ name: orgName, slug: orgSlug })
+      await createAdminOrg({ org_name: orgName, email: orgEmail, password: orgPassword })
       setOrgName('')
-      setOrgSlug('')
+      setOrgEmail('')
+      setOrgPassword('')
       setOrgAlert({ type: 'success', message: `Organization "${orgName}" created.` })
       loadData()
     } catch (err) {
@@ -117,7 +100,7 @@ function AdminPage() {
       })
       setUserEmail('')
       setUserPassword('')
-      setUserRole('user')
+      setUserRole('org_admin')
       setUserOrgId('')
       setUserAlert({ type: 'success', message: `User "${userEmail}" created.` })
       loadData()
@@ -140,10 +123,10 @@ function AdminPage() {
   }
 
   return (
-    <div>
-      <Navbar />
-      <div className="container mt-4">
-        <h1 className="mb-4">Admin Panel</h1>
+    <Layout requireRole="super_admin">
+      <div>
+        <h1 className="page-title">Admin Panel</h1>
+        <p className="page-subtitle mb-4">Manage organizations and platform users.</p>
 
         {/* ── Organizations Section ── */}
         <div className="card mb-5">
@@ -171,12 +154,23 @@ function AdminPage() {
               </div>
               <div className="form-group mr-2">
                 <input
-                  type="text"
+                  type="email"
                   className="form-control"
-                  placeholder="Slug (e.g. acme-corp)"
-                  value={orgSlug}
-                  onChange={(e) => setOrgSlug(e.target.value)}
+                  placeholder="Admin email"
+                  value={orgEmail}
+                  onChange={(e) => setOrgEmail(e.target.value)}
                   required
+                />
+              </div>
+              <div className="form-group mr-2">
+                <input
+                  type="password"
+                  className="form-control"
+                  placeholder="Admin password"
+                  value={orgPassword}
+                  onChange={(e) => setOrgPassword(e.target.value)}
+                  required
+                  minLength={8}
                 />
               </div>
               <button type="submit" className="btn btn-primary">
@@ -276,8 +270,8 @@ function AdminPage() {
                     value={userRole}
                     onChange={(e) => setUserRole(e.target.value)}
                   >
-                    <option value="user">user</option>
                     <option value="org_admin">org_admin</option>
+                    <option value="super_admin">super_admin</option>
                   </select>
                 </div>
                 <div className="col-md-3 form-group">
@@ -330,11 +324,7 @@ function AdminPage() {
                         <td>
                           <span
                             className={`badge badge-${
-                              user.role === 'super_admin'
-                                ? 'danger'
-                                : user.role === 'org_admin'
-                                ? 'warning'
-                                : 'secondary'
+                              user.role === 'super_admin' ? 'danger' : 'warning'
                             }`}
                           >
                             {user.role}
@@ -359,7 +349,7 @@ function AdminPage() {
           </div>
         </div>
       </div>
-    </div>
+    </Layout>
   )
 }
 

@@ -1,6 +1,7 @@
 """Policy management API routes."""
 
-from typing import Any
+import uuid
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
@@ -9,9 +10,16 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
-from app.models import PolicyVersion, User
-from app.schemas.policy_schema import PolicyCreate, PolicyResponse, PolicyUpdate, PolicyVersionResponse
-from app.services.audit_service import create_acceptance_log
+from app.dependencies import require_admin
+from app.models import AcceptanceLog, PolicyVersion, User
+from app.schemas.policy_schema import (
+    PolicyCreate,
+    PolicyResponse,
+    PolicyUpdate,
+    PolicyVersionResponse,
+    SendPolicyRequest,
+)
+from app.services.audit_service import create_acceptance_log, create_pending_acceptance_log
 from app.services.policy_service import (
     create_policy,
     delete_policy,
@@ -125,15 +133,19 @@ def publish_existing_policy(
     return publish_policy(db, policy_id)
 
 
-@router.post("/policies/{policy_id}/accept")
-def accept_policy(
+@router.post("/policies/{policy_id}/send", status_code=status.HTTP_200_OK)
+async def send_policy_to_emails(
     policy_id: int,
-    request: Request,
+    body: SendPolicyRequest,
+    current_user: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ) -> Any:
+    """Send a policy acceptance request email to one or more recipients."""
+    from app.services.email_service import send_policy_email
+
     policy = get_policy(db, policy_id)
-    if not policy.is_published:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Policy not found")
+    if current_user.role == "org_admin" and policy.organization_id != current_user.organization_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
 
     latest_version = (
         db.query(PolicyVersion)
@@ -144,7 +156,59 @@ def accept_policy(
     if not latest_version:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Policy version not found")
 
+    sent = []
+    for email in body.emails:
+        token = str(uuid.uuid4())
+        create_pending_acceptance_log(db, policy_id, latest_version.id, email, token)
+        await send_policy_email(email, policy_id, token, policy.title)
+        sent.append(email)
+
+    return {"message": f"Policy sent to {len(sent)} recipient(s)", "recipients": sent}
+
+
+@router.post("/policies/{policy_id}/accept")
+def accept_policy(
+    policy_id: int,
+    request: Request,
+    token: Optional[str] = None,
+    db: Session = Depends(get_db),
+) -> Any:
+    policy = get_policy(db, policy_id)
+    if not policy.is_published:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Policy not found")
+
     ip_address = request.client.host if request.client else None
     user_agent = request.headers.get("user-agent")
+
+    if token:
+        # Find the pending log row matching this token
+        log = (
+            db.query(AcceptanceLog)
+            .filter(
+                AcceptanceLog.acceptance_token == token,
+                AcceptanceLog.policy_id == policy_id,
+                AcceptanceLog.accepted_at.is_(None),
+            )
+            .first()
+        )
+        if not log:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid or already used token")
+        from datetime import datetime
+        log.accepted_at = datetime.utcnow()
+        log.ip_address = ip_address
+        log.user_agent = user_agent
+        db.commit()
+        return {"message": "Acceptance recorded"}
+
+    # Anonymous acceptance (no token)
+    latest_version = (
+        db.query(PolicyVersion)
+        .filter(PolicyVersion.policy_id == policy_id)
+        .order_by(PolicyVersion.version_number.desc())
+        .first()
+    )
+    if not latest_version:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Policy version not found")
+
     create_acceptance_log(db, policy_id, latest_version.id, ip_address, user_agent)
     return {"message": "Acceptance recorded"}

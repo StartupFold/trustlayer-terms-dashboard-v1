@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 
 class PolicyCreate(BaseModel):
@@ -47,9 +47,15 @@ class AcceptanceLogResponse(BaseModel):
     id: int
     policy_id: int
     policy_version_id: int
+    recipient_email: Optional[str] = None
+    acceptance_token: Optional[str] = None
     ip_address: Optional[str] = None
     user_agent: Optional[str] = None
-    accepted_at: datetime
+    accepted_at: Optional[datetime] = None
 
     class Config:
         orm_mode = True
+
+
+class SendPolicyRequest(BaseModel):
+    emails: List[EmailStr]

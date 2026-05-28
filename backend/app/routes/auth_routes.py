@@ -42,7 +42,7 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)) -> Any:
 		organization_id=user_in.organization_id,
 		email=user_in.email,
 		password_hash=hashed,
-		role=user_in.role or "user",
+		role=user_in.role or "org_admin",
 	)
 	db.add(user)
 	db.commit()

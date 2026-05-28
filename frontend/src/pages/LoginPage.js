@@ -1,10 +1,9 @@
 /*
-  Login page for user authentication.
-  Displays a centered login card and stores JWT credentials on success.
+  Login page — centered card with TrustLayer logo and clean form.
 */
 
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { login } from '../api/api'
 
 function decodeJwtPayload(token) {
@@ -33,62 +32,75 @@ function LoginPage() {
     event.preventDefault()
     setError('')
     setLoading(true)
-
     try {
       const response = await login(email, password)
       const token = response.data.access_token
       localStorage.setItem('token', token)
-
       const payload = decodeJwtPayload(token)
-      if (payload?.role) {
-        localStorage.setItem('role', payload.role)
-      }
-
+      if (payload?.role) localStorage.setItem('role', payload.role)
       navigate('/dashboard')
     } catch (err) {
-      const message =
-        err.response?.data?.detail || err.message || 'Login failed'
-      setError(message)
+      setError(err.response?.data?.detail || err.message || 'Login failed')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="container vh-100 d-flex align-items-center justify-content-center">
-      <div className="col-12 col-md-6 col-lg-4">
-        <div className="card shadow-sm">
-          <div className="card-body">
-            <h3 className="card-title text-center mb-4">🔒 TrustLayer</h3>
-            {error && <div className="alert alert-danger">{error}</div>}
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label htmlFor="email">Email</label>
-                <input
-                  id="email"
-                  type="email"
-                  className="form-control"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="password">Password</label>
-                <input
-                  id="password"
-                  type="password"
-                  className="form-control"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  required
-                />
-              </div>
-              <button type="submit" className="btn btn-primary btn-block mt-4" disabled={loading}>
-                {loading ? 'Logging in...' : 'Login'}
-              </button>
-            </form>
+    <div className="auth-page">
+      <div className="auth-card card">
+        <div className="card-body">
+          <div className="auth-logo">
+            <i className="bi bi-shield-check"></i>
           </div>
+          <h1 className="auth-title">TrustLayer</h1>
+          <p className="auth-subtitle">Sign in to your account</p>
+
+          {error && (
+            <div className="alert alert-danger">
+              <i className="bi bi-exclamation-circle mr-2"></i>{error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="email">Email address</label>
+              <input
+                id="email"
+                type="email"
+                className="form-control"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoFocus
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <input
+                id="password"
+                type="password"
+                className="form-control"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+              {loading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm mr-2" role="status"></span>
+                  Signing in…
+                </>
+              ) : 'Sign in'}
+            </button>
+          </form>
+
+          <p className="auth-divider">
+            Don't have an account? <Link to="/register">Register</Link>
+          </p>
         </div>
       </div>
     </div>

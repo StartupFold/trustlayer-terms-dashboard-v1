@@ -10,3 +10,4 @@ pydantic
 pydantic-settings
 email-validator
 python-multipart
+fastapi-mail>=1.2.0

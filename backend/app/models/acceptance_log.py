@@ -17,9 +17,12 @@ class AcceptanceLog(Base):
     id = Column(Integer, primary_key=True, index=True)
     policy_id = Column(Integer, ForeignKey("policies.id"), nullable=False)
     policy_version_id = Column(Integer, ForeignKey("policy_versions.id"), nullable=False)
+    recipient_email = Column(String, nullable=True)
+    acceptance_token = Column(String, unique=True, nullable=True)
     ip_address = Column(String, nullable=True)
     user_agent = Column(String, nullable=True)
-    accepted_at = Column(DateTime, default=utcnow, nullable=False)
+    # nullable: None = pending (token sent, not yet accepted); set when accepted
+    accepted_at = Column(DateTime, nullable=True)
 
     policy = relationship("Policy", back_populates="acceptance_logs")
     policy_version = relationship("PolicyVersion", back_populates="acceptance_logs")

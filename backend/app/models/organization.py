@@ -17,6 +17,8 @@ class Organization(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)
     slug = Column(String, unique=True, nullable=True)
+    email = Column(String, nullable=True)
+    subscription_status = Column(String, nullable=False, default="active")
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, default=utcnow, nullable=False)
 

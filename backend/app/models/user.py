@@ -18,11 +18,11 @@ class User(Base):
     organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=True)
     email = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)
-    role = Column(String, nullable=False, default="user")
+    role = Column(String, nullable=False, default="org_admin")
     created_at = Column(DateTime, default=utcnow, nullable=False)
 
     __table_args__ = (
-        CheckConstraint("role IN ('super_admin', 'org_admin', 'user')", name="user_role_check"),
+        CheckConstraint("role IN ('super_admin', 'org_admin')", name="user_role_check"),
     )
 
     organization = relationship("Organization", back_populates="users")

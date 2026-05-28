@@ -62,6 +62,7 @@ export function getAdminOrgs() {
 }
 
 export function createAdminOrg(data) {
+  // data: { org_name, email, password }
   return api.post('/api/admin/organizations', data)
 }
 
@@ -83,6 +84,11 @@ export function deleteAdminUser(id) {
   return api.delete(`/api/admin/users/${id}`)
 }
 
-export function acceptPolicy(id) {
-  return api.post(`/api/policies/${id}/accept`)
+export function acceptPolicy(id, token) {
+  const url = token ? `/api/policies/${id}/accept?token=${token}` : `/api/policies/${id}/accept`
+  return api.post(url)
+}
+
+export function sendPolicyEmail(id, emails) {
+  return api.post(`/api/policies/${id}/send`, { emails })
 }

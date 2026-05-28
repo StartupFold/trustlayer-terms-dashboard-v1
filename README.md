@@ -17,7 +17,8 @@ A multi-tenant SaaS platform for managing Terms & Conditions, tracking user acce
 
 ## Features
 
-- **JWT Authentication** — Secure login and registration with role-based access (admin / user)
+- **JWT Authentication** — Secure login with role-based access (`super_admin` / `org_admin`)
+- **Email Policy Delivery** — Send policy acceptance requests via email with unique acceptance tokens
 - **Policy Management** — Create, edit, delete, and publish Terms & Conditions policies
 - **Policy Versioning** — Every published policy generates an immutable version snapshot
 - **Acceptance Tracking** — Record and query which users accepted which policy version
@@ -110,7 +111,20 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:5432/trustlayer
 SECRET_KEY=your-secret-key-here
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# Email delivery (required for Send via Email feature)
+MAIL_USERNAME=your@gmail.com
+MAIL_PASSWORD=your-app-password
+MAIL_FROM=your@gmail.com
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+
+# Base URL shown in email links (no trailing slash)
+FRONTEND_URL=http://localhost:3000
 ```
+
+> **Email setup tip:** For Gmail, enable 2FA and generate an App Password at  
+> `myaccount.google.com → Security → App passwords`.
 
 ### 4. Set up the database and run migrations
 
@@ -189,8 +203,10 @@ docker compose -f deployment/docker-compose.yml down
 | DELETE | `/api/policies/{id}` | Delete a policy | Yes |
 | POST | `/api/policies/{id}/publish` | Publish a policy (creates version) | Yes |
 | GET | `/api/policies/{id}/versions` | Get all versions of a policy | Yes |
-| POST | `/api/policies/{id}/accept` | Record user acceptance of a policy | Yes |
-| GET | `/api/audit-logs` | Get audit log for the organization | Yes |
+| POST | `/api/policies/{id}/accept` | Record user acceptance (supports `?token=`) | No |
+| POST | `/api/policies/{id}/send` | Send policy acceptance email to recipients | Yes (admin) |
+| GET | `/api/admin/audit-logs` | Acceptance log (org-scoped for org_admin) | Yes |
+| POST | `/api/admin/organizations` | Create org + admin user account | Yes (super_admin) |
 
 Full interactive API documentation is available at `http://localhost:8000/docs` when the backend is running.
 

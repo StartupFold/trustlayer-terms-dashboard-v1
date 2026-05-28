@@ -1,6 +1,5 @@
 /*
-  Registration page for new user accounts.
-  Sends email + password to /api/register, then redirects to login.
+  Registration page — centered card matching the login page style.
 */
 
 import React, { useState } from 'react'
@@ -20,86 +19,85 @@ function RegisterPage() {
     e.preventDefault()
     setError('')
     setSuccess('')
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match.')
-      return
-    }
-
+    if (password !== confirmPassword) { setError('Passwords do not match.'); return }
     setLoading(true)
     try {
-      await register(email, password, 'user', null)
-      setSuccess('Account created! Redirecting to login...')
+      await register(email, password, 'org_admin', null)
+      setSuccess('Account created! Redirecting to login…')
       setTimeout(() => navigate('/'), 2000)
     } catch (err) {
-      const message = err.response?.data?.detail || err.message || 'Registration failed.'
-      setError(message)
+      setError(err.response?.data?.detail || err.message || 'Registration failed.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="container vh-100 d-flex align-items-center justify-content-center">
-      <div className="col-12 col-md-6 col-lg-4">
-        <div className="card shadow-sm">
-          <div className="card-body">
-            <h3 className="card-title text-center mb-4">🔒 TrustLayer</h3>
-            <h6 className="text-center text-muted mb-4">Create an account</h6>
-
-            {error && <div className="alert alert-danger">{error}</div>}
-            {success && <div className="alert alert-success">{success}</div>}
-
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label htmlFor="email">Email</label>
-                <input
-                  id="email"
-                  type="email"
-                  className="form-control"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="password">Password</label>
-                <input
-                  id="password"
-                  type="password"
-                  className="form-control"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={8}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="confirmPassword">Confirm Password</label>
-                <input
-                  id="confirmPassword"
-                  type="password"
-                  className="form-control"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  minLength={8}
-                />
-              </div>
-              <button
-                type="submit"
-                className="btn btn-primary btn-block mt-4"
-                disabled={loading}
-              >
-                {loading ? 'Creating account...' : 'Register'}
-              </button>
-            </form>
-
-            <p className="text-center mt-3 mb-0">
-              Already have an account?{' '}
-              <Link to="/">Login</Link>
-            </p>
+    <div className="auth-page">
+      <div className="auth-card card">
+        <div className="card-body">
+          <div className="auth-logo">
+            <i className="bi bi-shield-check"></i>
           </div>
+          <h1 className="auth-title">Create account</h1>
+          <p className="auth-subtitle">Join TrustLayer to manage your policies</p>
+
+          {error   && <div className="alert alert-danger"><i className="bi bi-exclamation-circle mr-2"></i>{error}</div>}
+          {success && <div className="alert alert-success"><i className="bi bi-check-circle mr-2"></i>{success}</div>}
+
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="email">Email address</label>
+              <input
+                id="email"
+                type="email"
+                className="form-control"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoFocus
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <input
+                id="password"
+                type="password"
+                className="form-control"
+                placeholder="Min 8 characters"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={8}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="confirmPassword">Confirm password</label>
+              <input
+                id="confirmPassword"
+                type="password"
+                className="form-control"
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={8}
+              />
+            </div>
+            <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+              {loading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm mr-2" role="status"></span>
+                  Creating account…
+                </>
+              ) : 'Create account'}
+            </button>
+          </form>
+
+          <p className="auth-divider">
+            Already have an account? <Link to="/">Sign in</Link>
+          </p>
         </div>
       </div>
     </div>

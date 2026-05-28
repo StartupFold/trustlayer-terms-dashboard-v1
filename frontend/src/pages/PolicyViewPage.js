@@ -1,63 +1,58 @@
 /*
-  Policy view page for reading policy details and accepting.
-  Public endpoint - no login required.
+  Policy view page — clean centered layout with sticky I Agree bar at bottom.
+  Supports token-based acceptance from email links (?token=xxx).
 */
 
 import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { acceptPolicy, getPolicies } from '../api/api'
+import { useParams, useSearchParams } from 'react-router-dom'
+import { acceptPolicy, getPolicies, getPolicyVersions } from '../api/api'
 
 function PolicyViewPage() {
   const { id } = useParams()
-  const [policy, setPolicy] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+  const [searchParams] = useSearchParams()
+  const token = searchParams.get('token')
+
+  const [policy, setPolicy]                 = useState(null)
+  const [content, setContent]               = useState('')
+  const [loading, setLoading]               = useState(true)
+  const [error, setError]                   = useState('')
+  const [success, setSuccess]               = useState('')
   const [acceptanceLoading, setAcceptanceLoading] = useState(false)
 
   useEffect(() => {
+    const policyId = parseInt(id, 10)
     getPolicies()
-      .then((response) => {
-        const found = response.data.find((p) => p.id === parseInt(id, 10))
-        if (found) {
-          setPolicy(found)
-          setError('')
-        } else {
-          setError('Policy not found.')
-        }
+      .then((res) => {
+        const found = res.data.find((p) => p.id === policyId)
+        if (!found) { setError('Policy not found.'); setLoading(false); return }
+        setPolicy(found)
+        return getPolicyVersions(policyId)
       })
-      .catch(() => {
-        setError('Unable to load policy.')
+      .then((res) => {
+        if (!res) return
+        const versions = res.data
+        if (versions.length > 0) setContent(versions[versions.length - 1].content || '')
       })
-      .finally(() => {
-        setLoading(false)
-      })
+      .catch(() => setError('Unable to load policy.'))
+      .finally(() => setLoading(false))
   }, [id])
 
   const handleAccept = () => {
     setSuccess('')
     setError('')
     setAcceptanceLoading(true)
-
-    acceptPolicy(parseInt(id, 10))
-      .then(() => {
-        setSuccess('You have accepted this policy.')
-      })
-      .catch((err) => {
-        const message = err.response?.data?.detail || 'Unable to accept policy.'
-        setError(message)
-      })
-      .finally(() => {
-        setAcceptanceLoading(false)
-      })
+    acceptPolicy(parseInt(id, 10), token)
+      .then(() => setSuccess('You have accepted this policy.'))
+      .catch((err) => setError(err.response?.data?.detail || 'Unable to accept policy.'))
+      .finally(() => setAcceptanceLoading(false))
   }
 
   if (loading) {
     return (
-      <div className="container mt-5">
-        <div className="text-center">
+      <div className="policy-view-page">
+        <div className="spinner-center" style={{ paddingTop: 80 }}>
           <div className="spinner-border" role="status">
-            <span className="sr-only">Loading...</span>
+            <span className="sr-only">Loading…</span>
           </div>
         </div>
       </div>
@@ -66,33 +61,72 @@ function PolicyViewPage() {
 
   if (!policy) {
     return (
-      <div className="container mt-5">
-        <div className="alert alert-danger">{error || 'Policy not found.'}</div>
+      <div className="policy-view-page">
+        <div style={{ width: '100%', maxWidth: 720 }}>
+          <div className="alert alert-danger">
+            <i className="bi bi-exclamation-circle mr-2"></i>
+            {error || 'Policy not found.'}
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="container mt-4">
-      <div className="card">
-        <div className="card-body">
-          <h3 className="card-title">{policy.title}</h3>
-          <p className="text-muted">{policy.policy_type}</p>
-          {error && <div className="alert alert-danger">{error}</div>}
-          {success && <div className="alert alert-success">{success}</div>}
-          <div className="card-text mt-4 p-3" style={{ backgroundColor: '#f8f9fa', minHeight: '200px' }}>
-            {policy.content || 'No content provided.'}
+    <div className="policy-view-page">
+      <div className="policy-view-card card shadow-sm">
+        <div className="card-body p-5">
+          <div className="text-center mb-4">
+            <span className="policy-view-badge">{policy.policy_type}</span>
           </div>
-          <button
-            type="button"
-            className="btn btn-primary mt-4"
-            onClick={handleAccept}
-            disabled={acceptanceLoading || Boolean(success)}
-          >
-            {acceptanceLoading ? 'Accepting...' : 'I Agree'}
-          </button>
+          <h1 className="policy-view-title">{policy.title}</h1>
+          <hr style={{ borderColor: 'var(--border)', margin: '20px 0' }} />
+
+          {error && (
+            <div className="alert alert-danger">
+              <i className="bi bi-exclamation-circle mr-2"></i>{error}
+            </div>
+          )}
+          {success && (
+            <div className="alert alert-success">
+              <i className="bi bi-check-circle mr-2"></i>{success}
+            </div>
+          )}
+          {token && !success && (
+            <div className="alert alert-info">
+              <i className="bi bi-envelope-open mr-2"></i>
+              You were invited to review this policy. Please read it carefully before accepting.
+            </div>
+          )}
+
+          <div className="policy-view-content">
+            {content || 'No content has been added to this policy yet.'}
+          </div>
         </div>
       </div>
+
+      {/* Sticky bottom agree bar */}
+      {!success && (
+        <div className="policy-agree-bar">
+          <button
+            type="button"
+            className="btn btn-primary policy-agree-btn"
+            onClick={handleAccept}
+            disabled={acceptanceLoading}
+          >
+            {acceptanceLoading ? (
+              <>
+                <span className="spinner-border spinner-border-sm mr-2" role="status"></span>
+                Recording…
+              </>
+            ) : (
+              <>
+                <i className="bi bi-check-lg mr-2"></i>I Agree to this Policy
+              </>
+            )}
+          </button>
+        </div>
+      )}
     </div>
   )
 }

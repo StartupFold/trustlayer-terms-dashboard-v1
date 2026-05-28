@@ -14,7 +14,7 @@ from pydantic import BaseModel, EmailStr, Field
 class UserRegister(BaseModel):
 	email: EmailStr
 	password: str = Field(min_length=8)
-	role: Optional[str] = "user"
+	role: Optional[str] = "org_admin"
 	organization_id: Optional[int] = None
 
 

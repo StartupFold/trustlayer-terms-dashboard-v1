@@ -53,3 +53,13 @@ def require_role(required_role: str):
             )
         return current_user
     return role_checker
+
+
+def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    """Allow both org_admin and super_admin; reject all others."""
+    if current_user.role not in ("super_admin", "org_admin"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized",
+        )
+    return current_user
