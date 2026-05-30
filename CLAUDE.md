@@ -57,24 +57,25 @@ trustlayer-terms-dashboard-v1/
 │   │   ├── main.py
 │   │   ├── config.py
 │   │   ├── database.py
-│   │   ├── dependencies.py        ← role guard (require_role)
+│   │   ├── dependencies.py        ← role guard (require_role, require_admin)
 │   │   ├── models/
 │   │   │   ├── user.py            ← role + org_id columns
-│   │   │   ├── organization.py    ← NEW: organizations table
+│   │   │   ├── organization.py    ← organizations table
 │   │   │   ├── policy.py          ← org_id column
 │   │   │   ├── policy_version.py
-│   │   │   └── acceptance_log.py
+│   │   │   └── acceptance_log.py  ← recipient_email + acceptance_token for email flow
 │   │   ├── routes/
 │   │   │   ├── auth_routes.py
-│   │   │   ├── policy_routes.py
+│   │   │   ├── policy_routes.py   ← includes /send endpoint
 │   │   │   └── admin_routes.py    ← super admin endpoints
 │   │   ├── services/
 │   │   │   ├── policy_service.py
-│   │   │   └── audit_service.py
+│   │   │   ├── audit_service.py   ← pending acceptance log support
+│   │   │   └── email_service.py   ← SMTP email via fastapi-mail
 │   │   └── schemas/
 │   │       ├── policy_schema.py
 │   │       ├── user_schema.py
-│   │       └── organization_schema.py  ← NEW
+│   │       └── organization_schema.py
 │   ├── seed_super_admin.py        ← run once after first deploy
 │   ├── requirements.txt
 │   └── alembic/
@@ -82,14 +83,18 @@ trustlayer-terms-dashboard-v1/
 │   ├── src/
 │   │   ├── pages/
 │   │   │   ├── LoginPage.js
-│   │   │   ├── RegisterPage.js    ← NEW
+│   │   │   ├── RegisterPage.js
 │   │   │   ├── DashboardPage.js   ← role-aware
-│   │   │   ├── PoliciesPage.js
-│   │   │   ├── PolicyViewPage.js
+│   │   │   ├── PoliciesPage.js    ← includes Send via Email modal
+│   │   │   ├── PolicyViewPage.js  ← supports ?token= acceptance link
 │   │   │   ├── AuditLogsPage.js
-│   │   │   └── AdminPage.js       ← NEW: super admin panel
+│   │   │   ├── AdminPage.js       ← org admin panel
+│   │   │   └── SuperAdminPage.js  ← super admin org account management
 │   │   ├── components/
-│   │   │   ├── Navbar.js          ← role-aware
+│   │   │   ├── Layout.js          ← shared page wrapper (Sidebar + TopBar)
+│   │   │   ├── Sidebar.js         ← fixed left nav, role-aware
+│   │   │   ├── TopBar.js          ← top header bar
+│   │   │   ├── Navbar.js
 │   │   │   ├── PolicyForm.js
 │   │   │   ├── PolicyTable.js
 │   │   │   └── AuditTable.js
@@ -122,9 +127,9 @@ trustlayer-terms-dashboard-v1/
 - Add a comment block at the top of every new file
 
 ## Role System
-- super_admin → full platform control, access to /admin
-- org_admin   → scoped to their own org only
-- user        → can accept policies
+- super_admin → full platform control, access to /admin and /super-admin
+- org_admin   → scoped to their own org only, access to /admin
+- user        → can accept policies via email link or direct
 
 ## API Endpoints (All Working)
 ### Auth
@@ -139,7 +144,8 @@ trustlayer-terms-dashboard-v1/
 - DELETE /api/policies/{id}
 - POST   /api/policies/{id}/publish
 - GET    /api/policies/{id}/versions
-- POST   /api/policies/{id}/accept
+- POST   /api/policies/{id}/accept          ← supports ?token= for email-link acceptance
+- POST   /api/policies/{id}/send            ← send acceptance email to recipients (admin)
 
 ### Admin (super_admin only)
 - GET    /api/admin/organizations
@@ -155,10 +161,11 @@ trustlayer-terms-dashboard-v1/
 - /           → LoginPage
 - /register   → RegisterPage
 - /dashboard  → DashboardPage (role-aware)
-- /policies   → PoliciesPage
-- /policies/:id/view → PolicyViewPage
+- /policies   → PoliciesPage (includes Send via Email modal)
+- /policies/:id/view → PolicyViewPage (supports ?token= for email-link acceptance)
 - /audit-logs → AuditLogsPage
-- /admin      → AdminPage (super_admin only)
+- /admin      → AdminPage (org_admin + super_admin)
+- /super-admin → SuperAdminPage (super_admin only — org account management)
 
 ## Seed Script
 - Location: backend/seed_super_admin.py
@@ -181,6 +188,9 @@ trustlayer-terms-dashboard-v1/
 - ✅ Phase 12: Super admin routes, role guard, org schemas, seed script
 - ✅ Phase 13: Admin panel frontend, register page, role-aware dashboard
 - ✅ Phase 14: Production Docker + Nginx, .env config, deployment guide
+- ✅ Phase 15: Email policy delivery — SMTP via fastapi-mail, /send endpoint, token-based acceptance
+- ✅ Phase 15: Super admin org management page (/super-admin route)
+- ✅ Phase 15: UI improvements — Layout, Sidebar, TopBar components; role-aware navigation
 - ✅ Fix:      bcrypt compatibility in Docker seed script and Dockerfile
 - ✅ Fix:      API baseURL changed to relative path for tunnel/domain compatibility
 - ✅ Fix:      Nginx updated for Cloudflare tunnel compatibility
@@ -204,11 +214,12 @@ trustlayer-terms-dashboard-v1/
 - Provider-agnostic — works on any Linux VPS
 
 ## Future Phases
-- Phase 15: Org admin user management panel
-- Phase 15: Email notifications (SendGrid/Mailgun)
+- Phase 16: Org admin user management panel (invite/manage users within their org)
 - Phase 16: VPS deployment with real domain
 - Phase 16: HTTPS via Let's Encrypt / Certbot
 - Phase 17: Subscription billing ($10/month per org)
+- Phase 18: Bulk acceptance reports and CSV export
+- Phase 18: SSO / SAML integration for enterprise orgs
 
 ## Git Workflow
 - Never ask Claude Code to commit

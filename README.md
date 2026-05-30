@@ -17,13 +17,15 @@ A multi-tenant SaaS platform for managing Terms & Conditions, tracking user acce
 
 ## Features
 
-- **JWT Authentication** — Secure login with role-based access (`super_admin` / `org_admin`)
-- **Email Policy Delivery** — Send policy acceptance requests via email with unique acceptance tokens
+- **JWT Authentication** — Secure login with role-based access (`super_admin` / `org_admin` / `user`)
+- **Multi-Tenant** — Organizations are isolated; each user belongs to exactly one organization
 - **Policy Management** — Create, edit, delete, and publish Terms & Conditions policies
 - **Policy Versioning** — Every published policy generates an immutable version snapshot
-- **Acceptance Tracking** — Record and query which users accepted which policy version
-- **Audit Logs** — Full audit trail of all policy and acceptance events across the organization
-- **Multi-Tenant** — Organizations are isolated; each user belongs to exactly one organization
+- **Acceptance Tracking** — Record which users accepted which policy version and when
+- **Email Policy Delivery** — Send acceptance-request emails with unique one-time tokens; recipients accept via a direct link without needing an account
+- **Audit Logs** — Full audit trail of all policy and acceptance events; scoped to org for org admins
+- **Super Admin Panel** — Platform-wide org account creation and management (`/super-admin`)
+- **Role-Aware UI** — Sidebar navigation and dashboard adapt automatically to the logged-in user's role
 
 ---
 
@@ -43,20 +45,24 @@ A multi-tenant SaaS platform for managing Terms & Conditions, tracking user acce
 trustlayer-terms-dashboard-v1/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py           # FastAPI app entry point
-│   │   ├── config.py         # Settings loaded from .env
-│   │   ├── database.py       # SQLAlchemy engine and session
-│   │   ├── models/           # ORM models (User, Organization, Policy, etc.)
-│   │   ├── routes/           # API route handlers
-│   │   ├── services/         # Business logic layer
-│   │   └── schemas/          # Pydantic request/response schemas
+│   │   ├── main.py              # FastAPI app entry point
+│   │   ├── config.py            # Settings loaded from .env
+│   │   ├── database.py          # SQLAlchemy engine and session
+│   │   ├── models/              # ORM models (User, Organization, Policy, etc.)
+│   │   ├── routes/              # API route handlers (auth, policy, admin)
+│   │   ├── services/            # Business logic (policy, audit, email)
+│   │   └── schemas/             # Pydantic request/response schemas
+│   ├── seed_super_admin.py      # Run once after first deploy
 │   ├── requirements.txt
-│   └── alembic/              # Database migrations
+│   └── alembic/                 # Database migrations
 ├── frontend/
 │   ├── src/
-│   │   ├── pages/            # LoginPage, DashboardPage, PoliciesPage, etc.
-│   │   ├── components/       # Reusable UI components
-│   │   ├── api/api.js        # Axios API client
+│   │   ├── pages/               # LoginPage, DashboardPage, PoliciesPage,
+│   │   │                        #   AdminPage, SuperAdminPage, AuditLogsPage,
+│   │   │                        #   PolicyViewPage, RegisterPage
+│   │   ├── components/          # Layout, Sidebar, TopBar, PolicyForm,
+│   │   │                        #   PolicyTable, AuditTable, Navbar
+│   │   ├── api/api.js           # Axios API client
 │   │   ├── App.js
 │   │   └── index.js
 │   └── package.json
@@ -64,8 +70,11 @@ trustlayer-terms-dashboard-v1/
 │   ├── docker-compose.yml
 │   ├── Dockerfile.backend
 │   ├── Dockerfile.frontend
+│   ├── README-deployment.md
 │   └── nginx/nginx.conf
-├── .env                      # Local environment variables (not committed)
+├── screenshots/
+├── .env                         # Local environment variables (not committed)
+├── .env.example
 └── CLAUDE.md
 ```
 
